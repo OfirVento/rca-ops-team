@@ -1,4 +1,5 @@
 import { AreaRuleSetsClient } from '@/components/layout/AreaRuleSetsClient';
+import { Suspense } from 'react';
 
 export function generateStaticParams() {
     return [
@@ -18,5 +19,9 @@ interface PageProps {
 
 export default async function Page({ params }: PageProps) {
     const { area } = await params;
-    return <AreaRuleSetsClient area={area} />;
+    return (
+        <Suspense fallback={<div>Loading Area Rules...</div>}>
+            <AreaRuleSetsClient area={area} />
+        </Suspense>
+    );
 }
