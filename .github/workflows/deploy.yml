@@ -43,7 +43,7 @@ jobs:
           # If it's not the repository name, you have to provide it.
           static_site_generator: next
       - name: Install dependencies
-        run: npm install
+        run: npm ci
       - name: Build with Next.js
         run: npx next build
       - name: Upload artifact
