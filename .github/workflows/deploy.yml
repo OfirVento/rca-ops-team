@@ -35,13 +35,6 @@ jobs:
           cache: 'npm'
       - name: Setup Pages
         uses: actions/configure-pages@v4
-        with:
-          # Automatically inject basePath in your Next.js config file and disable
-          # server side image optimization (WebP).
-          #
-          # You can guide lib with the folder name your project is in
-          # If it's not the repository name, you have to provide it.
-          static_site_generator: next
       - name: Install dependencies
         run: npm ci
       - name: Build with Next.js
