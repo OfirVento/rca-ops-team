@@ -65,9 +65,9 @@ export function StageDashboardClient({ stageName }: StageDashboardClientProps) {
                     <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm col-span-2">
                         <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-6">Approval Load & Quality</h3>
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="p-4 rounded-2xl bg-indigo-50 border border-indigo-100 shadow-sm">
-                                <p className="text-[10px] font-black uppercase tracking-widest text-indigo-400 mb-1">Queue Depth</p>
-                                <p className="text-2xl font-black text-indigo-900 tracking-tight">8 Pending</p>
+                            <div className="p-4 rounded-2xl bg-blue-50 border border-blue-100 shadow-sm">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-google-blue/70 mb-1">Queue Depth</p>
+                                <p className="text-2xl font-black text-slate-900 tracking-tight">8 Pending</p>
                             </div>
                             <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-100 shadow-sm">
                                 <p className="text-[10px] font-black uppercase tracking-widest text-emerald-400 mb-1">Quality Score</p>
@@ -90,20 +90,20 @@ export function StageDashboardClient({ stageName }: StageDashboardClientProps) {
             <div className="flex-1 flex flex-col min-h-0 bg-slate-50/30">
                 <header className="px-10 pt-10 pb-8 border-b border-slate-200/50 bg-white/50 backdrop-blur-md sticky top-0 z-20">
                     <div className="flex items-center gap-4 mb-8">
-                        <Link href="/" className="h-10 w-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-primary hover:border-primary/20 transition-all shadow-sm">
+                        <Link href="/" className="h-10 w-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-google-blue hover:border-google-blue/20 transition-all shadow-sm">
                             <ArrowLeft className="h-4 w-4" />
                         </Link>
                         <div className="flex items-center gap-2">
                             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Lifecycle Stage</span>
                             <ChevronRight className="h-3 w-3 text-slate-300" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">{stageName}</span>
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-google-blue">{stageName}</span>
                         </div>
                     </div>
 
                     <div className="flex items-end justify-between">
                         <div>
                             <h1 className="text-5xl font-black tracking-tighter text-slate-950 uppercase italic leading-none">
-                                {stageName} <span className="text-primary/40">Lab</span>
+                                {stageName} <span className="text-google-blue/40">Lab</span>
                             </h1>
                             <p className="text-sm font-bold text-slate-400 mt-2 max-w-lg">
                                 Deep-dive into {stageName} health, anomalies, and optimization opportunities.
@@ -118,7 +118,7 @@ export function StageDashboardClient({ stageName }: StageDashboardClientProps) {
                                     className={cn(
                                         "flex-1 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
                                         activeTab === tab
-                                            ? "bg-white text-primary shadow-sm"
+                                            ? "bg-white text-google-blue shadow-sm"
                                             : "text-slate-500 hover:text-slate-700"
                                     )}
                                 >
@@ -157,12 +157,12 @@ export function StageDashboardClient({ stageName }: StageDashboardClientProps) {
                                         <p className="text-[10px] font-bold text-amber-500 mt-1 uppercase">Requiring intervention</p>
                                     </div>
                                     <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm">
-                                        <div className="flex items-center gap-3 mb-4 text-primary">
+                                        <div className="flex items-center gap-3 mb-4 text-google-blue">
                                             <Clock className="h-4 w-4" />
                                             <span className="text-[10px] font-black uppercase tracking-widest">Avg Cycle</span>
                                         </div>
                                         <p className="text-3xl font-black text-slate-900 tracking-tight">1.4d</p>
-                                        <p className="text-[10px] font-bold text-primary mt-1 uppercase">SLA target: 2.0d</p>
+                                        <p className="text-[10px] font-bold text-google-blue mt-1 uppercase">SLA target: 2.0d</p>
                                     </div>
                                 </div>
 
@@ -180,7 +180,7 @@ export function StageDashboardClient({ stageName }: StageDashboardClientProps) {
                                                     key={i}
                                                     className={cn(
                                                         "flex-1 rounded-t-lg transition-colors",
-                                                        i === 6 ? "bg-primary" : "bg-slate-100"
+                                                        i === 6 ? "bg-google-blue" : "bg-slate-100"
                                                     )}
                                                     style={{ height: `${h}%` }}
                                                 />
@@ -188,7 +188,7 @@ export function StageDashboardClient({ stageName }: StageDashboardClientProps) {
                                         </div>
                                         <div className="flex justify-between mt-2">
                                             <span className="text-[8px] font-bold text-slate-400 uppercase">Mon</span>
-                                            <span className="text-[8px] font-black text-primary uppercase">Today</span>
+                                            <span className="text-[8px] font-black text-google-blue uppercase">Today</span>
                                         </div>
                                     </div>
                                 </div>
@@ -231,17 +231,17 @@ export function StageDashboardClient({ stageName }: StageDashboardClientProps) {
                                 exit={{ opacity: 0, y: -20 }}
                                 className="space-y-12"
                             >
-                                <div className="p-12 rounded-[3rem] bg-indigo-950 text-white relative overflow-hidden">
+                                <div className="p-12 rounded-[3rem] bg-slate-950 text-white relative overflow-hidden">
                                     <div className="absolute top-0 right-0 p-12 opacity-5">
                                         <Settings2 className="h-64 w-64" />
                                     </div>
                                     <div className="relative z-10 max-w-2xl">
-                                        <h2 className="text-4xl font-black tracking-tighter uppercase italic mb-6">Optimization <span className="text-primary">Studio</span></h2>
+                                        <h2 className="text-4xl font-black tracking-tighter uppercase italic mb-6">Optimization <span className="text-google-blue">Studio</span></h2>
                                         <p className="text-lg font-medium text-slate-300 mb-10 leading-relaxed">
                                             Simulate operational changes, test new logic against historical data, and deploy automated fixes directly from the lab.
                                         </p>
                                         <div className="flex gap-4">
-                                            <button className="h-14 px-8 rounded-2xl bg-primary text-white text-xs font-black uppercase tracking-[0.2em] flex items-center gap-3 hover:scale-105 transition-transform">
+                                            <button className="h-14 px-8 rounded-2xl bg-google-blue text-white text-xs font-black uppercase tracking-[0.2em] flex items-center gap-3 hover:scale-105 transition-transform">
                                                 <Play className="h-4 w-4" /> Run Simulation
                                             </button>
                                             <button className="h-14 px-8 rounded-2xl bg-white/10 text-white text-xs font-black uppercase tracking-[0.2em] hover:bg-white/20 transition-all">
@@ -252,17 +252,17 @@ export function StageDashboardClient({ stageName }: StageDashboardClientProps) {
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                    <div className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm group hover:border-primary/20 transition-all">
-                                        <div className="h-12 w-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                                    <div className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm group hover:border-google-blue/20 transition-all">
+                                        <div className="h-12 w-12 rounded-2xl bg-blue-50 text-google-blue flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                                             <FileText className="h-6 w-6" />
                                         </div>
                                         <h3 className="text-sm font-black uppercase tracking-widest text-slate-900 mb-3">Test Against Sample Data</h3>
                                         <p className="text-xs font-bold text-slate-500 leading-relaxed mb-6">
                                             Run new business rules against the last 30 days of production data to identify edge cases before they hit the stream.
                                         </p>
-                                        <button className="text-[10px] font-black uppercase tracking-widest text-primary hover:underline">Configure Test Set</button>
+                                        <button className="text-[10px] font-black uppercase tracking-widest text-google-blue hover:underline">Configure Test Set</button>
                                     </div>
-                                    <div className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm group hover:border-primary/20 transition-all">
+                                    <div className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm group hover:border-google-blue/20 transition-all">
                                         <div className="h-12 w-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                                             <Zap className="h-6 w-6" />
                                         </div>
@@ -270,7 +270,7 @@ export function StageDashboardClient({ stageName }: StageDashboardClientProps) {
                                         <p className="text-xs font-bold text-slate-500 leading-relaxed mb-6">
                                             Calculate the estimated margin recovery or cycle time improvement for proposed operational changes.
                                         </p>
-                                        <button className="text-[10px] font-black uppercase tracking-widest text-primary hover:underline">View Projection</button>
+                                        <button className="text-[10px] font-black uppercase tracking-widest text-google-blue hover:underline">View Projection</button>
                                     </div>
                                 </div>
                             </motion.div>

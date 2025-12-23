@@ -1,88 +1,72 @@
 "use client";
 
-import React from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useMemo } from 'react';
+import { motion } from 'framer-motion';
 import {
     LayoutGrid,
     Search,
-    ExternalLink
+    ExternalLink,
+    FileText,
+    TrendingUp,
+    AlertTriangle,
+    MoreVertical,
+    ArrowRight,
+    GitBranch,
+    List
 } from 'lucide-react';
-import { useEngine } from '@/context/EngineContext';
+import { cn } from '@/lib/utils';
+import { useEngine, LifecycleStage, RuleStatus } from '@/context/EngineContext';
 import { PilotGuide } from '@/components/layout/PilotGuide';
 import { LifecycleStepper } from '@/components/ui/LifecycleStepper';
-import { LogicGuidePanel, GuideItem } from '@/components/logic/LogicGuidePanel';
-import { UsageMap } from '@/components/logic/UsageMap';
-import { LogicHealthStrip } from '@/components/logic/LogicHealthStrip';
-import { ImpactFeed, FeedItem } from '@/components/logic/ImpactFeed';
+import { LogicStatusBadge } from '@/components/logic/LogicStatusBadge';
+import { UsageChips } from '@/components/logic/UsageChips';
+import { Sparkline } from '@/components/logic/Sparkline';
+import { RuleDetailDrawer } from '@/components/logic/RuleDetailDrawer';
+import { LogicDiagram } from '@/components/logic/LogicDiagram';
 
 export default function LogicHome() {
-    const router = useRouter();
     const { stages, ruleSets } = useEngine();
+    const [selectedArea, setSelectedArea] = useState<LifecycleStage | 'All'>('All');
+    const [filter, setFilter] = useState<string>('All');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [selectedRuleSetId, setSelectedRuleSetId] = useState<string | null>(null);
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    const [viewMode, setViewMode] = useState<'list' | 'diagram'>('list');
 
-    const guideItems: GuideItem[] = [
-        {
-            headline: "CPQ Discount Policy v12 is driving 38% of today’s queue.",
-            why: "Approval routing tightened last week.",
-            cta: "Show CPQ v12",
-            onClick: () => router.push('/rules/CPQ?ruleSet=rs1')
-        },
-        {
-            headline: "Billing Anomaly rule is holding 12 invoices.",
-            why: "Spike after usage import change.",
-            cta: "Show Billing holds",
-            onClick: () => router.push('/rules/Billing?ruleSet=rs6')
-        },
-        {
-            headline: "2 legacy Contract rules still firing (safe to retire).",
-            why: "Old template still referenced in APAC.",
-            cta: "Show legacy rules",
-            onClick: () => router.push('/rules/Contracts?filter=LEGACY')
-        }
-    ];
+    const filteredRuleSets = useMemo(() => {
+        return ruleSets.filter(rs => {
+            const matchesArea = selectedArea === 'All' || rs.area === selectedArea;
+            const matchesFilter = filter === 'All' || rs.status === filter || (filter === 'TRENDING' && rs.violations90d > 100);
+            const matchesSearch = rs.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                rs.description.toLowerCase().includes(searchQuery.toLowerCase());
+            return matchesArea && matchesFilter && matchesSearch;
+        });
+    }, [ruleSets, selectedArea, filter, searchQuery]);
 
-    const usageData = stages.map(stage => {
-        const areaSets = ruleSets.filter(rs => rs.area === stage.name);
-        return {
-            stage: stage.name,
-            now: areaSets.filter(rs => rs.status === 'ACTIVE').length,
-            trending: areaSets.filter(rs => rs.violations90d > 100).length,
-            legacy: areaSets.filter(rs => rs.status === 'LEGACY').length
-        };
-    });
-
-    const feedItems: FeedItem[] = [
-        {
-            id: 'rs1',
-            type: 'Deployed',
-            title: 'CPQ Discount Approvals v12 deployed.',
-            impactTags: ['Revenue', 'Cycle Time'],
-            why: 'Approvals down 8% (7d) after routing refinement.',
-            date: '6d ago'
-        },
-        {
-            id: 'rs6',
-            type: 'Proposed',
-            title: 'Billing anomaly threshold v8 proposed.',
-            impactTags: ['Revenue', 'Compliance'],
-            why: 'Expected holds +4/week to capture Tier 2 surge.',
-            date: '4d ago'
-        },
-        {
-            id: 'rs4',
-            type: 'Deprecated',
-            title: 'Contracts Net Terms v2 marked legacy.',
-            impactTags: ['Compliance'],
-            why: 'Legacy still firing on APAC Template v2.',
-            date: '120d ago'
-        }
-    ];
-
-    const stats = {
-        rulesInProd: ruleSets.filter(rs => rs.status === 'ACTIVE').length + 119,
-        testsPassing: "98.4%",
-        pendingApprovals: 3,
-        driftAlerts: 7
+    const handleOpenDetail = (id: string) => {
+        setSelectedRuleSetId(id);
+        setIsDrawerOpen(true);
     };
+
+    const handleStageClick = (stageName: string) => {
+        if (stageName === selectedArea) {
+            setSelectedArea('All');
+        } else {
+            setSelectedArea(stageName as LifecycleStage);
+        }
+    };
+
+    // Calculate stats for selected area
+    const areaStats = useMemo(() => {
+        const areaRules = selectedArea === 'All' ? ruleSets : ruleSets.filter(rs => rs.area === selectedArea);
+        return {
+            total: areaRules.length,
+            active: areaRules.filter(rs => rs.status === 'ACTIVE').length,
+            legacy: areaRules.filter(rs => rs.status === 'LEGACY').length,
+            evaluations: areaRules.reduce((sum, rs) => sum + rs.evaluations90d, 0),
+            violations: areaRules.reduce((sum, rs) => sum + rs.violations90d, 0)
+        };
+    }, [ruleSets, selectedArea]);
 
     return (
         <div className="flex h-screen w-full bg-white overflow-hidden">
@@ -101,7 +85,7 @@ export default function LogicHome() {
                                 Business <span className="text-google-blue">Logic</span>
                             </h1>
                             <p className="text-sm font-bold text-m3-on-surface-variant">
-                                Rules that power agents across the revenue lifecycle (outside Salesforce)
+                                Rules that power agents across the revenue lifecycle
                             </p>
                         </div>
 
@@ -111,6 +95,8 @@ export default function LogicHome() {
                                 <input
                                     type="text"
                                     placeholder="Search rules..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
                                     className="bg-white border border-slate-200 rounded-2xl py-2.5 pl-11 pr-4 text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-brand-600/10 transition-all w-64 shadow-sm"
                                 />
                             </div>
@@ -120,59 +106,256 @@ export default function LogicHome() {
                         </div>
                     </div>
 
+                    {/* Lifecycle Stepper as Filter */}
                     <div className="mt-8">
-                        <LifecycleStepper />
+                        <LifecycleStepper
+                            onStageClick={handleStageClick}
+                            selectedStage={selectedArea === 'All' ? null : selectedArea}
+                        />
                     </div>
                 </header>
 
                 <main className="flex-1 overflow-y-auto px-10 py-10 no-scrollbar">
-                    <div className="max-w-7xl mx-auto space-y-10">
-                        {/* 2) Agent Guide Banner */}
-                        <LogicGuidePanel items={guideItems} />
+                    <div className="max-w-7xl mx-auto space-y-8">
+                        {/* Area Intelligence Banner */}
+                        <section className="bg-slate-950 rounded-[2.5rem] p-8 text-white relative overflow-hidden shadow-2xl shadow-slate-900/20">
+                            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
+                                <div className="space-y-4 max-w-2xl">
+                                    <div className="flex items-center gap-2">
+                                        <div className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-google-blue">
+                                            {selectedArea === 'All' ? 'Global Intelligence Report' : `${selectedArea} Intelligence Report`}
+                                        </span>
+                                    </div>
+                                    <h2 className="text-2xl font-black tracking-tight leading-tight uppercase italic">
+                                        {selectedArea === 'All' ? (
+                                            <>Across all areas, <span className="text-google-blue">{areaStats.active} active rule sets</span> with {areaStats.evaluations.toLocaleString()} evaluations (90d).</>
+                                        ) : (
+                                            <>In {selectedArea}, <span className="text-google-blue">{areaStats.active} rule sets account for 92%</span> of evaluations in the last 90 days.</>
+                                        )}
+                                    </h2>
+                                    <div className="flex flex-wrap gap-3">
+                                        <div className="px-4 py-2 bg-white/5 border border-white/10 rounded-2xl flex items-center gap-3 group cursor-pointer hover:bg-white/10 transition-all" onClick={() => setFilter('TRENDING')}>
+                                            <TrendingUp className="h-4 w-4 text-emerald-400" />
+                                            <div>
+                                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-300">Violations: {areaStats.violations}</p>
+                                                <p className="text-[9px] font-bold text-slate-400/80 uppercase">90d total across bundles</p>
+                                            </div>
+                                        </div>
+                                        {areaStats.legacy > 0 && (
+                                            <div className="px-4 py-2 bg-white/5 border border-white/10 rounded-2xl flex items-center gap-3 group cursor-pointer hover:bg-white/10 transition-all" onClick={() => setFilter('LEGACY')}>
+                                                <AlertTriangle className="h-4 w-4 text-amber-400" />
+                                                <div>
+                                                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-300">{areaStats.legacy} Legacy Rules</p>
+                                                    <p className="text-[9px] font-bold text-slate-400/80 uppercase">Still firing in production</p>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
 
-                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-                            {/* 3) 90-Day Usage Map */}
-                            <div className="lg:col-span-8 space-y-8">
-                                <UsageMap
-                                    data={usageData}
-                                    onCellClick={(stage, col) => router.push(`/rules/${stage}?filter=${col}`)}
-                                />
+                                <div className="bg-white/5 backdrop-blur-md rounded-3xl p-6 border border-white/10 min-w-[280px]">
+                                    <h3 className="text-[10px] font-black uppercase tracking-widest text-google-blue mb-4">90d Performance</h3>
+                                    <div className="space-y-4">
+                                        {[
+                                            { label: 'Evals', val: areaStats.evaluations.toLocaleString(), trend: [10, 15, 8, 20, 18, 25, 30] },
+                                            { label: 'Violations', val: areaStats.violations.toString(), trend: [5, 4, 12, 8, 15, 10, 22] },
+                                            { label: 'Rule Sets', val: areaStats.total.toString(), trend: [2, 5, 3, 8, 4, 10, 12] },
+                                        ].map((t, idx) => (
+                                            <div key={idx} className="flex items-center gap-6">
+                                                <div className="shrink-0 w-20">
+                                                    <p className="text-[8px] font-black text-slate-500 uppercase">{t.label}</p>
+                                                    <p className="text-lg font-black tracking-tighter">{t.val}</p>
+                                                </div>
+                                                <div className="flex-1 opacity-50">
+                                                    <Sparkline data={t.trend} color="#4285F4" height={20} />
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
 
-                                {/* 4) Logic Health Strip */}
-                                <LogicHealthStrip
-                                    stats={stats}
-                                    onTileClick={(filter) => router.push(`/rules/All?filter=${filter}`)}
-                                />
+                        {/* Filter Pills */}
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+                                {['All', 'ACTIVE', 'TRENDING', 'LEGACY', 'PROPOSED'].map((f) => (
+                                    <button
+                                        key={f}
+                                        onClick={() => setFilter(f)}
+                                        className={cn(
+                                            "px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap",
+                                            filter === f
+                                                ? "bg-slate-900 text-white shadow-lg shadow-slate-200"
+                                                : "bg-white border border-slate-200 text-slate-500 hover:border-google-blue/20 hover:text-google-blue"
+                                        )}
+                                    >
+                                        {f}
+                                    </button>
+                                ))}
                             </div>
 
-                            {/* 5) Change & Impact Feed */}
-                            <div className="lg:col-span-4">
-                                <ImpactFeed
-                                    items={feedItems}
-                                    onViewRuleSet={(id) => router.push(`/rules/All?ruleSet=${id}`)}
-                                />
+                            {/* View Mode Toggle */}
+                            <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl p-1 shadow-sm">
+                                <button
+                                    onClick={() => setViewMode('list')}
+                                    className={cn(
+                                        "flex items-center gap-2 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
+                                        viewMode === 'list'
+                                            ? "bg-slate-900 text-white"
+                                            : "text-slate-500 hover:text-google-blue"
+                                    )}
+                                >
+                                    <List className="h-3.5 w-3.5" />
+                                    List
+                                </button>
+                                <button
+                                    onClick={() => setViewMode('diagram')}
+                                    className={cn(
+                                        "flex items-center gap-2 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
+                                        viewMode === 'diagram'
+                                            ? "bg-google-blue text-white shadow-google-glow"
+                                            : "text-slate-500 hover:text-google-blue"
+                                    )}
+                                >
+                                    <GitBranch className="h-3.5 w-3.5" />
+                                    Diagram
+                                </button>
                             </div>
                         </div>
+
+                        {/* Conditional View: Diagram or List */}
+                        {viewMode === 'diagram' ? (
+                            <LogicDiagram selectedArea={selectedArea} />
+                        ) : (
+                            <>
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between px-4">
+                                        <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                            Displaying {filteredRuleSets.length} Logic Bundles
+                                            {selectedArea !== 'All' && <span className="text-google-blue ml-2">({selectedArea})</span>}
+                                        </h3>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 gap-4 pb-20">
+                                        {filteredRuleSets.map((rs) => (
+                                            <motion.div
+                                                key={rs.id}
+                                                layoutId={rs.id}
+                                                className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:border-google-blue/20 hover:shadow-md transition-all group flex items-center justify-between"
+                                            >
+                                                <div className="flex items-center gap-6 flex-1">
+                                                    <div className="h-12 w-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-blue-50 group-hover:text-google-blue transition-colors shrink-0">
+                                                        <FileText className="h-6 w-6" />
+                                                    </div>
+                                                    <div className="min-w-0 max-w-sm">
+                                                        <div className="flex items-center gap-2 mb-1">
+                                                            <h4 className="text-base font-black text-slate-900 uppercase tracking-tight italic truncate">
+                                                                {rs.name}
+                                                            </h4>
+                                                            <LogicStatusBadge status={rs.status} />
+                                                        </div>
+                                                        <p className="text-xs font-bold text-slate-400 line-clamp-1">{rs.description}</p>
+                                                        <p className="text-[9px] font-black text-google-blue uppercase tracking-widest mt-1">{rs.area}</p>
+                                                    </div>
+
+                                                    <div className="h-10 w-[1px] bg-slate-100 hidden lg:block" />
+
+                                                    <div className="hidden lg:block shrink-0">
+                                                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">90d Evaluations</p>
+                                                        <UsageChips d7={rs.evaluations7d} d30={rs.evaluations30d} d90={rs.evaluations90d} />
+                                                    </div>
+
+                                                    <div className="h-10 w-[1px] bg-slate-100 hidden xl:block" />
+
+                                                    <div className="hidden xl:block shrink-0">
+                                                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Violations / Issues</p>
+                                                        <div className="flex items-center gap-4">
+                                                            <div className="flex flex-col">
+                                                                <span className="text-sm font-black text-slate-900 leading-none">{rs.violations90d}</span>
+                                                                <span className="text-[7px] font-bold text-slate-400 uppercase">Violations</span>
+                                                            </div>
+                                                            <div className="flex flex-col">
+                                                                <span className="text-sm font-black text-slate-900 leading-none">{rs.issuesCount}</span>
+                                                                <span className="text-[7px] font-bold text-slate-400 uppercase">Issues</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex items-center gap-3 shrink-0 ml-8">
+                                                    <button
+                                                        onClick={() => handleOpenDetail(rs.id)}
+                                                        className="h-10 px-6 rounded-2xl bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest hover:bg-google-blue transition-all shadow-sm"
+                                                    >
+                                                        Open Detail
+                                                    </button>
+                                                    <button className="h-10 w-10 flex items-center justify-center bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 transition-all shadow-sm">
+                                                        <MoreVertical className="h-4 w-4 text-slate-400" />
+                                                    </button>
+                                                </div>
+                                            </motion.div>
+                                        ))}
+
+                                        {filteredRuleSets.length === 0 && (
+                                            <div className="text-center py-20 flex flex-col items-center">
+                                                <div className="h-20 w-20 rounded-full bg-slate-100 flex items-center justify-center mb-6">
+                                                    <FileText className="h-10 w-10 text-slate-300" />
+                                                </div>
+                                                <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">No Rules Found</h3>
+                                                <p className="text-sm font-semibold text-slate-400 mt-2">
+                                                    No rule sets match the current filters.
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {filter === 'LEGACY' && filteredRuleSets.length > 0 && (
+                                    <section className="bg-amber-50 rounded-[2.5rem] p-8 border border-amber-100 border-dashed">
+                                        <div className="flex items-start gap-6">
+                                            <div className="h-12 w-12 rounded-2xl bg-amber-100 flex items-center justify-center shrink-0">
+                                                <AlertTriangle className="h-6 w-6 text-amber-600" />
+                                            </div>
+                                            <div className="flex-1">
+                                                <h3 className="text-lg font-black text-amber-900 uppercase tracking-tight mb-2">Legacy Engine Observation</h3>
+                                                <p className="text-sm font-bold text-amber-900/60 leading-relaxed mb-6">
+                                                    The rule sets below are still firing in production but have been identified for replacement.
+                                                </p>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    {filteredRuleSets.filter(rs => rs.status === 'LEGACY').map(rs => (
+                                                        <div key={rs.id} className="bg-white rounded-2xl p-5 border border-amber-200/50 shadow-sm flex items-center justify-between group">
+                                                            <div>
+                                                                <p className="text-[10px] font-black uppercase tracking-widest text-amber-600 mb-1">Legacy Source</p>
+                                                                <p className="text-sm font-black text-slate-900 italic tracking-tight uppercase leading-none">{rs.legacySource || rs.name}</p>
+                                                                <div className="flex items-center gap-2 mt-3">
+                                                                    <ArrowRight className="h-3.5 w-3.5 text-slate-300" />
+                                                                    <p className="text-[9px] font-bold text-slate-400 uppercase">Replaced by <span className="text-google-blue font-black">V4 Global Engine</span></p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </section>
+                                )}
+                            </>
+                        )}
                     </div>
                 </main>
-
-                <footer className="px-10 py-4 bg-white border-t border-slate-200 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Logic Guide Mini-Assist</span>
-                        <div className="h-1 w-1 rounded-full bg-slate-200" />
-                        <span className="text-[10px] font-bold text-slate-400 italic">"What rules are most important this month?"</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        <input
-                            type="text"
-                            placeholder="Ask Logic Guide..."
-                            className="bg-slate-50 border border-slate-100 rounded-xl px-4 py-1.5 text-[10px] font-semibold w-64 focus:outline-none focus:ring-2 focus:ring-brand-600/10 transition-all"
-                        />
-                    </div>
-                </footer>
             </div>
 
             <PilotGuide />
+
+            {selectedRuleSetId && (
+                <RuleDetailDrawer
+                    ruleSetId={selectedRuleSetId}
+                    isOpen={isDrawerOpen}
+                    onClose={() => setIsDrawerOpen(false)}
+                />
+            )}
         </div>
     );
 }

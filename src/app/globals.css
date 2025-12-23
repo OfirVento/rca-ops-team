@@ -5,12 +5,12 @@
   --font-sans: 'Inter', var(--font-geist-sans);
 
   /* Material Design 3 - Google Brand Source #4285F4 (Google Blue) */
-  --color-m3-primary: #1A73E8;
+  --color-m3-primary: #4285F4;
   --color-m3-on-primary: #FFFFFF;
   --color-m3-primary-container: #D2E3FC;
   --color-m3-on-primary-container: #174EA6;
 
-  --color-m3-secondary: #5F6368;
+  --color-m3-secondary: #3C4043;
   --color-m3-on-secondary: #FFFFFF;
   --color-m3-secondary-container: #EAEEF5;
   --color-m3-on-secondary-container: #171B20;
@@ -28,14 +28,14 @@
   --color-m3-surface: #FFFFFF;
   --color-m3-on-surface: #202124;
   --color-m3-surface-variant: #F1F3F4;
-  --color-m3-on-surface-variant: #5F6368;
+  --color-m3-on-surface-variant: #3C4043;
 
   --color-m3-surface-container-low: #F8F9FA;
   --color-m3-surface-container: #F1F3F4;
   --color-m3-surface-container-high: #E8EAED;
 
-  --color-m3-outline: #DADCE0;
-  --color-m3-outline-variant: #E8EAED;
+  --color-m3-outline: #BDC1C6;
+  --color-m3-outline-variant: #DADCE0;
 
   /* Google Brand Accents */
   --color-google-blue: #4285F4;

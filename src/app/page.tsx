@@ -18,9 +18,11 @@ import { KPIStrip } from '@/components/ui/KPIStrip';
 import { FunnelTile } from '@/components/ui/FunnelTile';
 import { IssueCard } from '@/components/ui/IssueCard';
 import { PilotGuide } from '@/components/layout/PilotGuide';
+import { LiveWorkspace } from '@/components/workspace/LiveWorkspace';
 
 export default function ControlTower() {
   const { stages, issues, heartbeat } = useEngine();
+  const [activeView, setActiveView] = React.useState<'Live Workspace' | 'Dashboard'>('Dashboard');
 
   const getStageMetrics = (stageName: string) => {
     switch (stageName) {
@@ -39,7 +41,7 @@ export default function ControlTower() {
       <div className="flex-1 flex flex-col min-h-0">
         {/* Header Section */}
         <header className="px-10 pt-10 pb-6 space-y-6">
-          <div className="flex items-end justify-between">
+          <div className="flex items-center justify-between">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <div className="h-8 w-8 rounded-xl bg-google-blue/10 flex items-center justify-center shadow-m3-1">
@@ -55,22 +57,22 @@ export default function ControlTower() {
               </p>
             </div>
 
-            <div className="flex items-center gap-4 bg-white p-2 rounded-m3-lg border border-m3-outline-variant shadow-m3-1 hover:shadow-m3-2 transition-all">
-              <div className="px-5 py-2 border-r border-m3-outline-variant flex flex-col items-center">
-                <span className="m3-type-label-large text-m3-on-surface-variant mb-1">Heartbeat</span>
-                <span className="m3-type-label-large text-google-blue font-black tracking-widest">0x{heartbeat.toString(16).toUpperCase()}</span>
-              </div>
-              <div className="px-4 py-1 flex items-center gap-4">
-                <div className="flex -space-x-3">
-                  {[1, 2, 3].map(i => (
-                    <div key={i} className="h-8 w-8 rounded-full border-2 border-white bg-m3-surface-container shadow-m3-1" />
-                  ))}
-                </div>
-                <div className="flex flex-col">
-                  <span className="m3-type-label-large text-m3-on-surface !tracking-tight">6 Specialists</span>
-                  <span className="text-[10px] font-black text-google-green uppercase tracking-widest mt-0.5">Sync Active</span>
-                </div>
-              </div>
+            {/* View Switcher */}
+            <div className="flex bg-m3-surface-container p-0.5 rounded-full border border-m3-outline-variant shadow-sm h-fit mb-2">
+              {['Dashboard', 'Live Workspace'].map((view) => (
+                <button
+                  key={view}
+                  onClick={() => setActiveView(view as any)}
+                  className={cn(
+                    "px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all",
+                    activeView === view
+                      ? "bg-white text-google-blue shadow-m3-1"
+                      : "text-m3-on-surface-variant hover:text-m3-on-surface text-opacity-70"
+                  )}
+                >
+                  {view}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -78,65 +80,81 @@ export default function ControlTower() {
         </header>
 
         <div className="flex-1 overflow-y-auto px-10 pb-12 space-y-12">
-          {/* Global KPI Strip */}
-          <section className="space-y-6">
-            <div className="flex items-center gap-3 px-1">
-              <div className="h-1 w-8 rounded-full bg-google-blue shadow-google-glow" />
-              <h2 className="m3-type-label-large text-m3-on-surface-variant flex items-center gap-2">
-                <LayoutGrid className="h-4 w-4" />
-                Global Status
-              </h2>
-            </div>
-            <KPIStrip />
-          </section>
+          {activeView === 'Dashboard' ? (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-12"
+            >
+              {/* Global KPI Strip */}
+              <section className="space-y-6">
+                <div className="flex items-center gap-3 px-1">
+                  <div className="h-1 w-8 rounded-full bg-google-blue shadow-google-glow" />
+                  <h2 className="m3-type-label-large text-m3-on-surface-variant flex items-center gap-2">
+                    <LayoutGrid className="h-4 w-4" />
+                    Global Status
+                  </h2>
+                </div>
+                <KPIStrip />
+              </section>
 
-          {/* Funnel Tiles */}
-          <section className="space-y-6">
-            <div className="flex items-center justify-between px-1">
-              <div className="flex items-center gap-3">
-                <div className="h-1 w-8 rounded-full bg-google-green shadow-m3-1" />
-                <h2 className="m3-type-label-large text-m3-on-surface-variant flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4" />
-                  Lifecycle Performance
-                </h2>
-              </div>
-              <button className="m3-type-label-large text-google-blue hover:underline">
-                View Full Metrics
-              </button>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {stages.map((stage, i) => (
-                <FunnelTile
-                  key={stage.name}
-                  stage={stage}
-                  idx={i}
-                  metrics={getStageMetrics(stage.name)}
-                />
-              ))}
-            </div>
-          </section>
+              {/* Funnel Tiles */}
+              <section className="space-y-6">
+                <div className="flex items-center justify-between px-1">
+                  <div className="flex items-center gap-3">
+                    <div className="h-1 w-8 rounded-full bg-google-green shadow-m3-1" />
+                    <h2 className="m3-type-label-large text-m3-on-surface-variant flex items-center gap-2">
+                      <TrendingUp className="h-4 w-4" />
+                      Lifecycle Performance
+                    </h2>
+                  </div>
+                  <button className="m3-type-label-large text-google-blue hover:underline">
+                    View Full Metrics
+                  </button>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {stages.map((stage, i) => (
+                    <FunnelTile
+                      key={stage.name}
+                      stage={stage}
+                      idx={i}
+                      metrics={getStageMetrics(stage.name)}
+                    />
+                  ))}
+                </div>
+              </section>
 
-          {/* Priority Queue Section */}
-          <section className="space-y-6">
-            <div className="flex items-center justify-between px-1">
-              <div className="flex items-center gap-3">
-                <div className="h-1 w-8 rounded-full bg-google-red shadow-m3-1" />
-                <h2 className="m3-type-label-large text-m3-on-surface-variant flex items-center gap-2">
-                  <Zap className="h-4 w-4 text-google-yellow" />
-                  Critical Workstreams
-                </h2>
-              </div>
-              <button className="m3-type-label-large text-google-blue flex items-center gap-1 group">
-                Open Inbox <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
-              </button>
-            </div>
+              {/* Priority Queue Section */}
+              <section className="space-y-6">
+                <div className="flex items-center justify-between px-1">
+                  <div className="flex items-center gap-3">
+                    <div className="h-1 w-8 rounded-full bg-google-red shadow-m3-1" />
+                    <h2 className="m3-type-label-large text-m3-on-surface-variant flex items-center gap-2">
+                      <Zap className="h-4 w-4 text-google-yellow" />
+                      Critical Workstreams
+                    </h2>
+                  </div>
+                  <button className="m3-type-label-large text-google-blue flex items-center gap-1 group">
+                    Open Inbox <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
+                  </button>
+                </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {issues.map((issue) => (
-                <IssueCard key={issue.id} issue={issue} />
-              ))}
-            </div>
-          </section>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  {issues.map((issue) => (
+                    <IssueCard key={issue.id} issue={issue} />
+                  ))}
+                </div>
+              </section>
+            </motion.div>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex-1 min-h-0"
+            >
+              <LiveWorkspace />
+            </motion.div>
+          )}
         </div>
       </div>
 

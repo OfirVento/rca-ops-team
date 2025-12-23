@@ -16,12 +16,16 @@ import {
     Play,
     Database,
     Search,
-    CheckCircle2
+    CheckCircle2,
+    BrainCircuit,
+    RefreshCw
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useEngine } from '@/context/EngineContext';
 import { PilotGuide } from '@/components/layout/PilotGuide';
 
 export default function OptimizationLab() {
+    const { agents, stages } = useEngine();
     const [discountThreshold, setDiscountThreshold] = useState(20);
     const [renewalUplift, setRenewalUplift] = useState(3);
     const [dunningStart, setDunningStart] = useState(7);
@@ -87,6 +91,63 @@ export default function OptimizationLab() {
                 </header>
 
                 <div className="flex-1 overflow-y-auto px-10 py-10 pb-32">
+                    {/* Live Intelligence Logic Context - First Section */}
+                    <section className="mb-10 bg-white rounded-[32px] border border-m3-outline-variant shadow-m3-2 overflow-hidden">
+                        <div className="p-6 border-b border-m3-outline-variant bg-slate-50/50 flex items-center justify-between">
+                            <div className="flex flex-col">
+                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Live Intelligence</span>
+                                <h2 className="m3-type-label-large text-slate-900 flex items-center gap-2">
+                                    <RefreshCw className="h-4 w-4 text-google-blue animate-spin-slow" />
+                                    Logic Context
+                                </h2>
+                            </div>
+                            <div className="h-2 w-2 rounded-full bg-google-green animate-pulse" />
+                        </div>
+
+                        <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <AnimatePresence mode="popLayout">
+                                {agents.slice(0, 6).map((agent) => (
+                                    <motion.div
+                                        key={agent.id}
+                                        layout
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="space-y-2 p-4 bg-slate-50/50 rounded-2xl border border-slate-100 hover:border-google-blue/20 transition-colors"
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2 text-[10px] font-black uppercase text-slate-900 tracking-tight">
+                                                <span className="h-1.5 w-1.5 rounded-full bg-google-blue shadow-[0_0_8px_rgba(66,133,244,0.4)]" />
+                                                {agent.name}
+                                            </div>
+                                            <span className={cn(
+                                                "text-[8px] font-black uppercase tracking-tighter px-2 py-0.5 rounded-full border shadow-sm",
+                                                agent.status === 'Idle' ? "bg-slate-50 text-slate-400 border-slate-200" :
+                                                    "bg-google-green/10 text-google-green border-google-green/20"
+                                            )}>
+                                                {agent.status}
+                                            </span>
+                                        </div>
+                                        <p className="text-[10px] font-semibold text-slate-500 leading-relaxed italic line-clamp-2">
+                                            "{agent.reasoning}"
+                                        </p>
+                                    </motion.div>
+                                ))}
+                            </AnimatePresence>
+                        </div>
+
+                        <div className="px-6 py-4 bg-slate-900 text-white">
+                            <div className="flex items-center gap-4">
+                                <div className="h-8 w-8 rounded-lg bg-google-blue flex items-center justify-center shrink-0 shadow-lg shadow-google-blue/20">
+                                    <BrainCircuit className="h-4 w-4 animate-pulse" />
+                                </div>
+                                <div>
+                                    <div className="text-[9px] font-black text-google-blue uppercase tracking-widest mb-0.5">Manager Instance Active</div>
+                                    <p className="text-[10px] font-bold leading-tight text-white/70">Coordinating multi-agent protocols across {stages.length} stages.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
                         {/* Controls Panel */}
                         <div className="lg:col-span-4 space-y-8">

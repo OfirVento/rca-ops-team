@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowRight, Activity } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { StageData } from '@/context/EngineContext';
 
@@ -18,44 +18,50 @@ export function FunnelTile({ stage, metrics, idx }: FunnelTileProps) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: idx * 0.1 }}
-            className="m3-card-elevated p-6 flex flex-col group h-full m3-state-layer overflow-hidden cursor-default bg-white shadow-m3-1 hover:shadow-google-glow transition-all"
+            className="rounded-2xl p-6 flex flex-col group h-full overflow-hidden bg-white border border-slate-200 shadow-sm hover:shadow-md hover:border-google-blue/20 transition-all relative"
         >
-            <div className="flex items-center justify-between mb-6 relative z-10">
-                <div className="flex items-center gap-3">
+            <div className="flex items-center justify-between mb-4 relative z-10">
+                <div className="flex items-center gap-2.5">
                     <div className={cn(
-                        "h-2.5 w-2.5 rounded-full shadow-google-glow",
-                        stage.status === 'Healthy' || stage.status === 'Stable' ? "bg-google-green" : "bg-google-yellow animate-pulse"
+                        "h-2 w-2 rounded-full",
+                        stage.status === 'Healthy' || stage.status === 'Stable'
+                            ? "bg-google-green shadow-[0_0_8px_rgba(52,168,83,0.4)]"
+                            : stage.status === 'Critical'
+                                ? "bg-google-red animate-pulse shadow-[0_0_8px_rgba(234,67,53,0.4)]"
+                                : "bg-google-yellow animate-pulse shadow-[0_0_8px_rgba(251,188,4,0.4)]"
                     )} />
-                    <h3 className="m3-type-label-large text-m3-on-surface-variant uppercase tracking-widest">{stage.name}</h3>
+                    <h3 className="text-sm font-black text-slate-900 uppercase tracking-tighter">{stage.name}</h3>
                 </div>
-                <Link href={`/stage/${stage.name}`} className="m3-type-label-large text-google-blue hover:underline transition-all flex items-center gap-1 cursor-pointer">
-                    Details <ArrowRight className="h-4 w-4" />
-                </Link>
             </div>
 
-            <div className="flex-1 space-y-4 relative z-10">
-                {metrics.map((metric, i) => (
-                    <div key={metric.label} className="flex items-center justify-between">
-                        <span className="m3-type-label-large font-bold text-m3-on-surface-variant uppercase tracking-tight">{metric.label}</span>
-                        <span className="m3-type-label-large font-black text-m3-on-surface">{metric.value}</span>
+            <div className="flex-1 space-y-2.5 relative z-10">
+                {metrics.map((metric) => (
+                    <div key={metric.label} className="flex items-center justify-between group/item">
+                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{metric.label}</span>
+                        <span className="text-sm font-black text-slate-900 tracking-tight">{metric.value}</span>
                     </div>
                 ))}
             </div>
 
-            <div className="mt-8 pt-6 border-t border-m3-outline-variant flex items-center justify-between relative z-10">
-                <div className="space-y-1">
-                    <p className="m3-type-label-large text-m3-on-surface-variant uppercase">Health Index</p>
+            <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between relative z-10">
+                <div className="space-y-0.5">
+                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Health Index</p>
                     <p className={cn(
-                        "m3-type-title-large italic",
-                        stage.health > 90 ? "text-google-green" : stage.health > 80 ? "text-google-blue" : "text-google-yellow"
+                        "text-3xl font-black italic tracking-tighter leading-none",
+                        stage.status === 'Healthy' || stage.status === 'Stable'
+                            ? "text-google-green"
+                            : stage.status === 'Critical'
+                                ? "text-google-red"
+                                : "text-google-yellow"
                     )}>{stage.health}%</p>
                 </div>
-                <div className="h-11 w-11 flex items-center justify-center rounded-xl bg-google-blue/10 group-hover:bg-google-blue transition-all shadow-m3-1">
-                    <Activity className={cn(
-                        "h-5 w-5",
-                        stage.health > 80 ? "text-google-blue group-hover:text-white" : "text-google-yellow group-hover:text-white"
-                    )} />
-                </div>
+
+                <Link
+                    href={`/stage/${stage.name}`}
+                    className="h-9 w-9 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-200 text-slate-400 group-hover:bg-google-blue group-hover:text-white group-hover:border-google-blue transition-all shadow-sm shadow-slate-100 group-hover:scale-110"
+                >
+                    <ChevronRight className="h-4 w-4" />
+                </Link>
             </div>
         </motion.div>
     );

@@ -95,7 +95,7 @@ export const RuleDetailDrawer = ({ ruleSetId, isOpen, onClose }: RuleDetailDrawe
                                 <button className="flex-1 py-3 bg-m3-surface-variant text-m3-on-surface-variant rounded-full m3-type-label-large font-black uppercase tracking-widest hover:bg-m3-outline-variant transition-all m3-state-layer overflow-hidden shadow-m3-1">
                                     Simulate Logic
                                 </button>
-                                <button className="flex-1 py-3 bg-m3-primary text-m3-on-primary rounded-full m3-type-label-large font-black uppercase tracking-widest hover:bg-indigo-700 transition-all m3-state-layer overflow-hidden shadow-m3-1">
+                                <button className="flex-1 py-3 bg-m3-primary text-m3-on-primary rounded-full m3-type-label-large font-black uppercase tracking-widest hover:bg-google-blue/90 transition-all m3-state-layer overflow-hidden shadow-m3-1">
                                     Propose Change
                                 </button>
                                 <button className="h-12 w-12 rounded-full border border-m3-outline-variant flex items-center justify-center hover:bg-m3-surface-variant transition-all m3-state-layer overflow-hidden shadow-m3-1">
@@ -277,7 +277,7 @@ const VersionsTab = ({ versions }: { versions: RuleVersion[] }) => (
     <div className="space-y-8">
         <div className="flex items-center justify-between px-1">
             <h3 className="m3-type-label-large font-bold uppercase tracking-widest text-m3-on-surface-variant">Lifecycle Timeline</h3>
-            <button className="flex items-center gap-3 m3-type-label-large font-black uppercase tracking-widest text-m3-primary hover:text-indigo-800 transition-colors">
+            <button className="flex items-center gap-3 m3-type-label-large font-black uppercase tracking-widest text-m3-primary hover:text-google-blue transition-colors">
                 <Split className="h-5 w-5" /> Analytics Bridge
             </button>
         </div>

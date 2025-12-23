@@ -124,6 +124,7 @@ export interface KPIMetrics {
     revenueAtRisk: string;
     cycleTimeHotspots: string;
     billingRisk: string;
+    netRevenueEfficiency: string;
 }
 
 interface EngineContextType {
@@ -146,13 +147,92 @@ const EngineContext = createContext<EngineContextType | undefined>(undefined);
 const INITIAL_STAGES: StageData[] = [
     { name: 'Catalog', health: 98, status: 'Healthy', counts: { total: 480, atRisk: 2, pending: 5 } },
     { name: 'CPQ', health: 92, status: 'Healthy', counts: { total: 124, atRisk: 12, pending: 8 } },
-    { name: 'Contracts', health: 74, status: 'Warning', counts: { total: 85, atRisk: 19, pending: 11 } },
+    { name: 'Contracts', health: 74, status: 'Critical', counts: { total: 85, atRisk: 19, pending: 11 } },
     { name: 'Orders', health: 96, status: 'Healthy', counts: { total: 312, atRisk: 6, pending: 18 } },
-    { name: 'Assets', health: 88, status: 'Stable', counts: { total: 420, atRisk: 22, pending: 48 } },
+    { name: 'Assets', health: 88, status: 'Warning', counts: { total: 420, atRisk: 22, pending: 48 } },
     { name: 'Billing', health: 82, status: 'Warning', counts: { total: 250, atRisk: 12, pending: 4 } },
 ];
 
 const INITIAL_RULE_SETS: RuleSet[] = [
+    // === CATALOG (5 rules) ===
+    {
+        id: 'cat1',
+        name: 'Product Availability',
+        area: 'Catalog',
+        owner: 'Product Ops',
+        description: 'Validates product availability and regional restrictions',
+        status: 'ACTIVE',
+        currentVersion: 'v6',
+        evaluations7d: 3200,
+        evaluations30d: 12400,
+        evaluations90d: 34000,
+        violations90d: 89,
+        issuesCount: 12,
+        lastChange: '3d ago'
+    },
+    {
+        id: 'cat2',
+        name: 'Price Book Selection',
+        area: 'Catalog',
+        owner: 'RevOps',
+        description: 'Matches customer segment to appropriate price book',
+        status: 'ACTIVE',
+        currentVersion: 'v11',
+        evaluations7d: 2800,
+        evaluations30d: 11200,
+        evaluations90d: 28000,
+        violations90d: 156,
+        issuesCount: 28,
+        lastChange: '1d ago'
+    },
+    {
+        id: 'cat3',
+        name: 'SKU Validation',
+        area: 'Catalog',
+        owner: 'Product Ops',
+        description: 'Enforces valid SKU format and active product status',
+        status: 'ACTIVE',
+        currentVersion: 'v8',
+        evaluations7d: 4100,
+        evaluations30d: 15600,
+        evaluations90d: 42000,
+        violations90d: 34,
+        issuesCount: 8,
+        lastChange: '5d ago'
+    },
+    {
+        id: 'cat4',
+        name: 'Bundle Eligibility',
+        area: 'Catalog',
+        owner: 'Product Ops',
+        description: 'Determines which products can be bundled together',
+        status: 'ACTIVE',
+        currentVersion: 'v3',
+        evaluations7d: 1800,
+        evaluations30d: 7200,
+        evaluations90d: 19000,
+        violations90d: 210,
+        issuesCount: 45,
+        lastChange: '8d ago'
+    },
+    {
+        id: 'cat5',
+        name: 'Legacy SKU Mapper',
+        area: 'Catalog',
+        owner: 'Product Ops',
+        description: 'Maps deprecated SKUs to replacement products',
+        status: 'LEGACY',
+        currentVersion: 'v1',
+        evaluations7d: 45,
+        evaluations30d: 180,
+        evaluations90d: 520,
+        violations90d: 8,
+        issuesCount: 2,
+        lastChange: '60d ago',
+        legacySource: 'Legacy ERP Integration'
+    },
+
+    // === CPQ (6 rules) ===
     {
         id: 'rs1',
         name: 'Discount Approvals',
@@ -201,6 +281,53 @@ const INITIAL_RULE_SETS: RuleSet[] = [
         replacementId: 'rs2'
     },
     {
+        id: 'cpq4',
+        name: 'Margin Calculator',
+        area: 'CPQ',
+        owner: 'Finance',
+        description: 'Calculates and enforces minimum margin thresholds',
+        status: 'ACTIVE',
+        currentVersion: 'v7',
+        evaluations7d: 1900,
+        evaluations30d: 7600,
+        evaluations90d: 21000,
+        violations90d: 89,
+        issuesCount: 15,
+        lastChange: '2d ago'
+    },
+    {
+        id: 'cpq5',
+        name: 'Quote Expiration',
+        area: 'CPQ',
+        owner: 'Sales Ops',
+        description: 'Manages quote validity periods and auto-expiration',
+        status: 'ACTIVE',
+        currentVersion: 'v5',
+        evaluations7d: 980,
+        evaluations30d: 3900,
+        evaluations90d: 10500,
+        violations90d: 22,
+        issuesCount: 6,
+        lastChange: '4d ago'
+    },
+    {
+        id: 'cpq6',
+        name: 'Multi-Year Pricing',
+        area: 'CPQ',
+        owner: 'RevOps',
+        description: 'Applies uplift and discount rules for multi-year deals',
+        status: 'PROPOSED',
+        currentVersion: 'v1-draft',
+        evaluations7d: 0,
+        evaluations30d: 0,
+        evaluations90d: 0,
+        violations90d: 0,
+        issuesCount: 0,
+        lastChange: '1d ago'
+    },
+
+    // === CONTRACTS (5 rules) ===
+    {
         id: 'rs4',
         name: 'Net Terms Alignment',
         area: 'Contracts',
@@ -232,6 +359,207 @@ const INITIAL_RULE_SETS: RuleSet[] = [
         lastChange: '2d ago'
     },
     {
+        id: 'con3',
+        name: 'Signature Authority',
+        area: 'Contracts',
+        owner: 'Legal',
+        description: 'Validates signatory authority based on deal value',
+        status: 'ACTIVE',
+        currentVersion: 'v4',
+        evaluations7d: 620,
+        evaluations30d: 2480,
+        evaluations90d: 6800,
+        violations90d: 18,
+        issuesCount: 5,
+        lastChange: '7d ago'
+    },
+    {
+        id: 'con4',
+        name: 'Renewal Terms',
+        area: 'Contracts',
+        owner: 'Legal',
+        description: 'Enforces auto-renewal and notice period requirements',
+        status: 'ACTIVE',
+        currentVersion: 'v6',
+        evaluations7d: 450,
+        evaluations30d: 1800,
+        evaluations90d: 4900,
+        violations90d: 56,
+        issuesCount: 12,
+        lastChange: '3d ago'
+    },
+    {
+        id: 'con5',
+        name: 'SLA Compliance',
+        area: 'Contracts',
+        owner: 'Legal',
+        description: 'Matches SLA terms to service tier commitments',
+        status: 'ACTIVE',
+        currentVersion: 'v3',
+        evaluations7d: 380,
+        evaluations30d: 1520,
+        evaluations90d: 4200,
+        violations90d: 28,
+        issuesCount: 8,
+        lastChange: '5d ago'
+    },
+
+    // === ORDERS (5 rules) ===
+    {
+        id: 'ord1',
+        name: 'Order Validation',
+        area: 'Orders',
+        owner: 'Order Ops',
+        description: 'Validates order completeness before processing',
+        status: 'ACTIVE',
+        currentVersion: 'v9',
+        evaluations7d: 2400,
+        evaluations30d: 9600,
+        evaluations90d: 26000,
+        violations90d: 142,
+        issuesCount: 28,
+        lastChange: '1d ago'
+    },
+    {
+        id: 'ord2',
+        name: 'Fulfillment Routing',
+        area: 'Orders',
+        owner: 'Order Ops',
+        description: 'Routes orders to appropriate fulfillment center',
+        status: 'ACTIVE',
+        currentVersion: 'v5',
+        evaluations7d: 1800,
+        evaluations30d: 7200,
+        evaluations90d: 19500,
+        violations90d: 34,
+        issuesCount: 8,
+        lastChange: '4d ago'
+    },
+    {
+        id: 'ord3',
+        name: 'Credit Check',
+        area: 'Orders',
+        owner: 'Finance',
+        description: 'Validates customer credit limit before order approval',
+        status: 'ACTIVE',
+        currentVersion: 'v7',
+        evaluations7d: 1200,
+        evaluations30d: 4800,
+        evaluations90d: 13000,
+        violations90d: 89,
+        issuesCount: 18,
+        lastChange: '2d ago'
+    },
+    {
+        id: 'ord4',
+        name: 'Shipping Rules',
+        area: 'Orders',
+        owner: 'Order Ops',
+        description: 'Determines shipping method and carrier selection',
+        status: 'ACTIVE',
+        currentVersion: 'v4',
+        evaluations7d: 980,
+        evaluations30d: 3920,
+        evaluations90d: 10600,
+        violations90d: 12,
+        issuesCount: 3,
+        lastChange: '6d ago'
+    },
+    {
+        id: 'ord5',
+        name: 'Backorder Management',
+        area: 'Orders',
+        owner: 'Order Ops',
+        description: 'Handles out-of-stock items and backorder creation',
+        status: 'PROPOSED',
+        currentVersion: 'v1-draft',
+        evaluations7d: 0,
+        evaluations30d: 0,
+        evaluations90d: 0,
+        violations90d: 0,
+        issuesCount: 0,
+        lastChange: '3d ago'
+    },
+
+    // === ASSETS (5 rules) ===
+    {
+        id: 'ast1',
+        name: 'Asset Provisioning',
+        area: 'Assets',
+        owner: 'Asset Ops',
+        description: 'Triggers provisioning workflows for new subscriptions',
+        status: 'ACTIVE',
+        currentVersion: 'v6',
+        evaluations7d: 890,
+        evaluations30d: 3560,
+        evaluations90d: 9600,
+        violations90d: 45,
+        issuesCount: 12,
+        lastChange: '2d ago'
+    },
+    {
+        id: 'ast2',
+        name: 'Usage Tracking',
+        area: 'Assets',
+        owner: 'Asset Ops',
+        description: 'Monitors consumption against entitlements',
+        status: 'ACTIVE',
+        currentVersion: 'v8',
+        evaluations7d: 2100,
+        evaluations30d: 8400,
+        evaluations90d: 22800,
+        violations90d: 178,
+        issuesCount: 34,
+        lastChange: '1d ago'
+    },
+    {
+        id: 'ast3',
+        name: 'Renewal Eligibility',
+        area: 'Assets',
+        owner: 'RevOps',
+        description: 'Determines renewal timing and eligibility conditions',
+        status: 'ACTIVE',
+        currentVersion: 'v5',
+        evaluations7d: 620,
+        evaluations30d: 2480,
+        evaluations90d: 6700,
+        violations90d: 28,
+        issuesCount: 8,
+        lastChange: '5d ago'
+    },
+    {
+        id: 'ast4',
+        name: 'Upgrade Pathways',
+        area: 'Assets',
+        owner: 'Product Ops',
+        description: 'Defines valid upgrade and downgrade paths',
+        status: 'ACTIVE',
+        currentVersion: 'v3',
+        evaluations7d: 340,
+        evaluations30d: 1360,
+        evaluations90d: 3680,
+        violations90d: 15,
+        issuesCount: 4,
+        lastChange: '8d ago'
+    },
+    {
+        id: 'ast5',
+        name: 'Termination Rules',
+        area: 'Assets',
+        owner: 'Asset Ops',
+        description: 'Manages early termination fees and processes',
+        status: 'ACTIVE',
+        currentVersion: 'v4',
+        evaluations7d: 180,
+        evaluations30d: 720,
+        evaluations90d: 1950,
+        violations90d: 8,
+        issuesCount: 2,
+        lastChange: '12d ago'
+    },
+
+    // === BILLING (5 rules) ===
+    {
         id: 'rs6',
         name: 'Usage Anomaly Holds',
         area: 'Billing',
@@ -260,8 +588,54 @@ const INITIAL_RULE_SETS: RuleSet[] = [
         violations90d: 8,
         issuesCount: 2,
         lastChange: '1d ago'
+    },
+    {
+        id: 'bil3',
+        name: 'Proration Calculator',
+        area: 'Billing',
+        owner: 'Billing Ops',
+        description: 'Calculates prorated charges for mid-cycle changes',
+        status: 'ACTIVE',
+        currentVersion: 'v6',
+        evaluations7d: 780,
+        evaluations30d: 3120,
+        evaluations90d: 8450,
+        violations90d: 24,
+        issuesCount: 6,
+        lastChange: '3d ago'
+    },
+    {
+        id: 'bil4',
+        name: 'Tax Calculation',
+        area: 'Billing',
+        owner: 'Finance',
+        description: 'Applies correct tax rates based on jurisdiction',
+        status: 'ACTIVE',
+        currentVersion: 'v14',
+        evaluations7d: 1450,
+        evaluations30d: 5800,
+        evaluations90d: 15700,
+        violations90d: 56,
+        issuesCount: 14,
+        lastChange: '2d ago'
+    },
+    {
+        id: 'bil5',
+        name: 'Dunning Escalation',
+        area: 'Billing',
+        owner: 'Finance',
+        description: 'Manages payment reminder and collection escalation',
+        status: 'ACTIVE',
+        currentVersion: 'v5',
+        evaluations7d: 290,
+        evaluations30d: 1160,
+        evaluations90d: 3140,
+        violations90d: 18,
+        issuesCount: 5,
+        lastChange: '6d ago'
     }
 ];
+
 
 const INITIAL_RULES: Rule[] = [
     {
@@ -387,7 +761,8 @@ export function EngineProvider({ children }: { children: React.ReactNode }) {
         itemsNeedingAttention: 31,
         revenueAtRisk: '$242.1k',
         cycleTimeHotspots: '1.4d Avg',
-        billingRisk: '$48.5k'
+        billingRisk: '$48.5k',
+        netRevenueEfficiency: '84.2%'
     };
 
     const topInsights: string[] = [
